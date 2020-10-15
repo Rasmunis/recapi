@@ -22,23 +22,29 @@ namespace RecAPI.Controllers
 
         // GET: api/Recipes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes()
+        public async Task<ActionResult<IEnumerable<RecipeDTO>>> GetRecipes()
         {
-            return await _context.Recipes.ToListAsync();
+            var recipes = await _context.Recipes.ToListAsync();
+            IEnumerable<RecipeDTO> recipeDTOs = recipes.Select(r => r.ToDto());
+            return Ok(recipeDTOs);
         }
 
         // GET: api/Recipes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Recipe>> GetRecipe(int id)
+        public async Task<ActionResult<RecipeDTO>> GetRecipe(int id)
         {
-            var recipe = await _context.Recipes.FindAsync(id);
+            var recipe = await _context.Recipes
+                .Where(r => r.Id == id)
+                .Include(r => r.RecipeIngredients).ThenInclude(ri => ri.Recipe)
+                .Include(r => r.RecipeIngredients).ThenInclude(ri => ri.Ingredient)
+                .FirstOrDefaultAsync();
 
             if (recipe == null)
             {
                 return NotFound();
             }
 
-            return recipe;
+            return recipe.ToDto();
         }
 
         // PUT: api/Recipes/5
@@ -73,17 +79,43 @@ namespace RecAPI.Controllers
 
         // POST: api/Recipes
         [HttpPost]
-        public async Task<ActionResult<Recipe>> PostRecipe(Recipe recipe)
+        public async Task<ActionResult<RecipeDTO>> PostRecipe(RecipeDTO recipeDTO)
         {
+            Recipe recipe = recipeDTO.ToEntity();
+            foreach (RecipeIngredientDTO recipeIngredientDTO in recipeDTO.RecipeIngredients)
+            {
+                Ingredient ingredient = await _context.Ingredients.FindAsync(recipeIngredientDTO.IngredientId);
+                RecipeIngredient recipeIngredient = new RecipeIngredient
+                {
+                    RecipeId = recipe.Id,
+                    Recipe = recipe,
+                    IngredientId = recipeIngredientDTO.IngredientId,
+                    Ingredient = ingredient,
+                    Amount = recipeIngredientDTO.Amount,
+                    Unit = recipeIngredientDTO.Unit
+                };
+
+                if (recipe.RecipeIngredients == null)
+                {
+                    recipe.RecipeIngredients = new List<RecipeIngredient>();
+                }
+                recipe.RecipeIngredients.Add(recipeIngredient);
+
+                if (ingredient.RecipeIngredients == null)
+                {
+                    ingredient.RecipeIngredients = new List<RecipeIngredient>();
+                }
+                ingredient.RecipeIngredients.Add(recipeIngredient);
+            }
             _context.Recipes.Add(recipe);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetRecipe", new { id = recipe.Id }, recipe);
+            return CreatedAtAction("GetRecipe", new { id = recipe.Id }, recipe.ToDto());
         }
 
         // DELETE: api/Recipes/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Recipe>> DeleteRecipe(int id)
+        public async Task<ActionResult<RecipeDTO>> DeleteRecipe(int id)
         {
             var recipe = await _context.Recipes.FindAsync(id);
             if (recipe == null)
@@ -94,7 +126,7 @@ namespace RecAPI.Controllers
             _context.Recipes.Remove(recipe);
             await _context.SaveChangesAsync();
 
-            return recipe;
+            return recipe.ToDto();
         }
 
         private bool RecipeExists(int id)
