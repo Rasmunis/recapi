@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace RecAPI.Models
 {
@@ -10,5 +11,34 @@ namespace RecAPI.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public List<RecipeIngredient> RecipeIngredients { get; set; }
+    }
+
+    public static class IngredientUtils
+    {
+        public static IngredientDTO ToDto(this Ingredient ingredient)
+        {
+            if (ingredient == null)
+                return null;
+            IngredientDTO ingredientDTO = new IngredientDTO
+            {
+                Id = ingredient.Id,
+                Name = ingredient.Name
+            };
+
+            return ingredientDTO;
+        }
+
+        public static Ingredient ToEntity(this IngredientDTO ingredientDTO)
+        {
+            if (ingredientDTO == null)
+                return null;
+
+            Ingredient ingredient = new Ingredient
+            {
+                Name = ingredientDTO.Name
+            };
+
+            return ingredient;
+        }
     }
 }

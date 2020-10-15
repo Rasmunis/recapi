@@ -25,4 +25,41 @@ namespace RecAPI.Models
         Liters,
         Cloves
     }
+
+    public static class RecipeIngredientUtils
+    {
+        public static RecipeIngredientDTO ToDto(this RecipeIngredient recipeIngredient)
+        {
+            if (recipeIngredient == null)
+                return null;
+
+            RecipeIngredientDTO recipeIngredientDTO = new RecipeIngredientDTO
+            {
+                RecipeId = recipeIngredient.RecipeId,
+                RecipeName = recipeIngredient.Recipe.Name,
+                IngredientId = recipeIngredient.IngredientId,
+                IngredientName = recipeIngredient.Ingredient.Name,
+                Amount = recipeIngredient.Amount,
+                Unit = recipeIngredient.Unit
+            };
+
+            return recipeIngredientDTO;
+        }
+
+        public static RecipeIngredient ToEntity(this RecipeIngredientDTO recipeIngredientDTO)
+        {
+            if (recipeIngredientDTO == null)
+                return null;
+
+            RecipeIngredient recipeIngredient = new RecipeIngredient
+            {
+                RecipeId = recipeIngredientDTO.RecipeId,
+                IngredientId = recipeIngredientDTO.IngredientId,
+                Amount = recipeIngredientDTO.Amount,
+                Unit = recipeIngredientDTO.Unit
+            };
+
+            return recipeIngredient;
+        }
+    }
 }
