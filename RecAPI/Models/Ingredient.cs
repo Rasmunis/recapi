@@ -25,6 +25,11 @@ namespace RecAPI.Models
                 Name = ingredient.Name
             };
 
+            ingredient.RecipeIngredients?.ForEach(recipeIngredient =>
+            {
+                ingredientDTO.RecipeIngredients.Add(recipeIngredient.ToDto());
+            });
+
             return ingredientDTO;
         }
 
@@ -35,7 +40,8 @@ namespace RecAPI.Models
 
             Ingredient ingredient = new Ingredient
             {
-                Name = ingredientDTO.Name
+                Name = ingredientDTO.Name,
+                RecipeIngredients = new List<RecipeIngredient>()
             };
 
             return ingredient;

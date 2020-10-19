@@ -22,14 +22,17 @@ namespace RecAPI.Controllers
 
         // GET: api/Ingredients
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Ingredient>>> GetIngredients()
+        public async Task<ActionResult<IEnumerable<IngredientDTO>>> GetIngredients()
         {
-            return await _context.Ingredients.ToListAsync();
+            var ingredients = await _context.Ingredients
+                .Include(i => i.RecipeIngredients).ThenInclude(ri => ri.Recipe)
+                .ToListAsync();
+            return Ok(ingredients.Select(i => i.ToDto()));
         }
 
         // GET: api/Ingredients/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Ingredient>> GetIngredient(int id)
+        public async Task<ActionResult<IngredientDTO>> GetIngredient(int id)
         {
             var ingredient = await _context.Ingredients.FindAsync(id);
 
@@ -38,7 +41,24 @@ namespace RecAPI.Controllers
                 return NotFound();
             }
 
-            return ingredient;
+            return ingredient.ToDto();
+        }
+
+        // GET: api/Ingredients/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<IngredientDTO>> GetIngredientWithRecipes(int id)
+        {
+            var ingredient = await _context.Ingredients
+                .Where(i => i.Id == id)
+                .Include(i => i.RecipeIngredients).ThenInclude(ri => ri.Recipe)
+                .FirstOrDefaultAsync();
+
+            if (ingredient == null)
+            {
+                return NotFound();
+            }
+
+            return ingredient.ToDto();
         }
 
         // PUT: api/Ingredients/5
@@ -73,17 +93,18 @@ namespace RecAPI.Controllers
 
         // POST: api/Ingredients
         [HttpPost]
-        public async Task<ActionResult<Ingredient>> PostIngredient(Ingredient ingredient)
+        public async Task<ActionResult<IngredientDTO>> PostIngredient(IngredientDTO ingredientDTO)
         {
+            Ingredient ingredient = ingredientDTO.ToEntity();
             _context.Ingredients.Add(ingredient);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetIngredient", new { id = ingredient.Id }, ingredient);
+            return CreatedAtAction("GetIngredient", new { id = ingredient.Id }, ingredient.ToDto());
         }
 
         // DELETE: api/Ingredients/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Ingredient>> DeleteIngredient(int id)
+        public async Task<ActionResult<IngredientDTO>> DeleteIngredient(int id)
         {
             var ingredient = await _context.Ingredients.FindAsync(id);
             if (ingredient == null)
@@ -94,7 +115,7 @@ namespace RecAPI.Controllers
             _context.Ingredients.Remove(ingredient);
             await _context.SaveChangesAsync();
 
-            return ingredient;
+            return ingredient.ToDto();
         }
 
         private bool IngredientExists(int id)
