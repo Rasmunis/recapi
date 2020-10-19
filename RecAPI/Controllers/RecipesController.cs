@@ -25,7 +25,6 @@ namespace RecAPI.Controllers
         public async Task<ActionResult<IEnumerable<RecipeDTO>>> GetRecipes()
         {
             var recipes = await _context.Recipes
-                .Include(r => r.RecipeIngredients).ThenInclude(ri => ri.Recipe)
                 .Include(r => r.RecipeIngredients).ThenInclude(ri => ri.Ingredient)
                 .ToListAsync();
             IEnumerable<RecipeDTO> recipeDTOs = recipes.Select(r => r.ToDto());
@@ -38,7 +37,6 @@ namespace RecAPI.Controllers
         {
             var recipe = await _context.Recipes
                 .Where(r => r.Id == id)
-                .Include(r => r.RecipeIngredients).ThenInclude(ri => ri.Recipe)
                 .Include(r => r.RecipeIngredients).ThenInclude(ri => ri.Ingredient)
                 .FirstOrDefaultAsync();
 
@@ -87,7 +85,11 @@ namespace RecAPI.Controllers
             Recipe recipe = recipeDTO.ToEntity();
             foreach (RecipeIngredientDTO recipeIngredientDTO in recipeDTO.RecipeIngredients)
             {
-                Ingredient ingredient = await _context.Ingredients.FindAsync(recipeIngredientDTO.IngredientId);
+                Ingredient ingredient = await _context.Ingredients
+                    .Where(i => i.Id == recipeIngredientDTO.IngredientId)
+                    .Include(i => i.RecipeIngredients)
+                    .FirstOrDefaultAsync();
+
                 RecipeIngredient recipeIngredient = new RecipeIngredient
                 {
                     RecipeId = recipe.Id,
@@ -98,16 +100,7 @@ namespace RecAPI.Controllers
                     Unit = recipeIngredientDTO.Unit
                 };
 
-                if (recipe.RecipeIngredients == null)
-                {
-                    recipe.RecipeIngredients = new List<RecipeIngredient>();
-                }
                 recipe.RecipeIngredients.Add(recipeIngredient);
-
-                if (ingredient.RecipeIngredients == null)
-                {
-                    ingredient.RecipeIngredients = new List<RecipeIngredient>();
-                }
                 ingredient.RecipeIngredients.Add(recipeIngredient);
             }
             _context.Recipes.Add(recipe);

@@ -31,10 +31,10 @@ namespace RecAPI.Models
 				RecipeIngredients = new List<RecipeIngredientDTO>()
 			};
 
-			foreach (RecipeIngredient recipeIngredient in recipe.RecipeIngredients)
-            {
+			recipe.RecipeIngredients?.ForEach(recipeIngredient =>
+			{
 				recipeDTO.RecipeIngredients.Add(recipeIngredient.ToDto());
-            }
+			});
 
 			return recipeDTO;
 		}
