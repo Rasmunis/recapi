@@ -24,7 +24,10 @@ namespace RecAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RecipeDTO>>> GetRecipes()
         {
-            var recipes = await _context.Recipes.ToListAsync();
+            var recipes = await _context.Recipes
+                .Include(r => r.RecipeIngredients).ThenInclude(ri => ri.Recipe)
+                .Include(r => r.RecipeIngredients).ThenInclude(ri => ri.Ingredient)
+                .ToListAsync();
             IEnumerable<RecipeDTO> recipeDTOs = recipes.Select(r => r.ToDto());
             return Ok(recipeDTOs);
         }
