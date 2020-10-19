@@ -52,11 +52,6 @@ namespace RecAPI.Models
 				RecipeIngredients = new List<RecipeIngredient>()
 			};
 
-			foreach (RecipeIngredientDTO recipeIngredientDTO in recipeDTO.RecipeIngredients)
-            {
-				recipe.RecipeIngredients.Add(recipeIngredientDTO.ToEntity());
-            }
-
 			return recipe;
         }
 	}
