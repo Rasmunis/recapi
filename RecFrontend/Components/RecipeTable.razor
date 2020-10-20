@@ -1,0 +1,24 @@
+﻿@typeparam TRecipe
+
+<table class="recipe-table">
+    <thead>
+        <tr>@RecipeTableHeader</tr>
+    </thead>
+    <tbody>
+        @foreach (var recipe in Recipes)
+        {
+            <tr>@RecipeTableRow(recipe)</tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<TRecipe> Recipes { get; set; }
+
+    [Parameter]
+    public RenderFragment RecipeTableHeader { get; set; }
+
+    [Parameter]
+    public RenderFragment<TRecipe> RecipeTableRow { get; set; }
+}

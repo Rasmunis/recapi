@@ -1,0 +1,29 @@
+﻿@page "/"
+@using RecFrontend.Components
+
+<h3>RecipeSearch</h3>
+<RecipeTable Recipes="recipes" TRecipe="Recipe">
+    <RecipeTableHeader>
+        <th>Name</th>
+        <th>Description</th>
+    </RecipeTableHeader>
+    <RecipeTableRow Context="recipe">
+        <td>@recipe.Name</td>
+        <td>@recipe.Description</td>
+    </RecipeTableRow>
+</RecipeTable>
+
+@code {
+    private class Recipe
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Instructions { get; set; }
+    };
+
+    private List<Recipe> recipes = new List<Recipe>
+    {
+        new Recipe {Id = 1, Name = "Pure Garlic", Description = "For the true garlic lovers", Instructions = "Peel garlic. Consume Garlic"}
+    };
+}
