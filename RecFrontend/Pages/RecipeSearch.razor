@@ -1,17 +1,35 @@
 ﻿@page "/"
-@using RecFrontend.Components
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@inject HttpClient httpClient
 
 <h3>RecipeSearch</h3>
-<RecipeTable Recipes="recipes" TRecipe="Recipe">
-    <RecipeTableHeader>
-        <th>Name</th>
-        <th>Description</th>
-    </RecipeTableHeader>
-    <RecipeTableRow Context="recipe">
-        <td>@recipe.Name</td>
-        <td>@recipe.Description</td>
-    </RecipeTableRow>
-</RecipeTable>
+
+<BlazoredTypeahead SearchMethod="@SearchIngredients"
+                   Values="CurrentlySelectedIngredients"
+                   ValuesExpression="@( () => CurrentlySelectedIngredients )"
+                   ValuesChanged="@((IList<Ingredient> _) => IngredientsChanged())"
+                   TItem="@Ingredient"
+                   TValue="@Ingredient"
+                   Context="ingredient"
+                   placeholder="Search for ingredients...">
+    <SelectedTemplate>
+        @ingredient.Name
+    </SelectedTemplate>
+    <ResultTemplate>
+        @ingredient.Name
+    </ResultTemplate>
+</BlazoredTypeahead>
+
+
+@foreach (KeyValuePair<string, List<RecipeIngredient>> ingredientCombination in recipesFromIngredients)
+{
+    <h5>@ingredientCombination.Key</h5>
+    foreach (RecipeIngredient recipeIngredient in ingredientCombination.Value)
+    {
+        <div>@recipeIngredient.RecipeName</div>
+    }
+}
 
 @code {
     private class Recipe
@@ -22,8 +40,64 @@
         public string Instructions { get; set; }
     };
 
-    private List<Recipe> recipes = new List<Recipe>
+    private class Ingredient : IEquatable<Ingredient>
     {
-        new Recipe {Id = 1, Name = "Pure Garlic", Description = "For the true garlic lovers", Instructions = "Peel garlic. Consume Garlic"}
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool Equals(Ingredient other)
+        {
+            if (other == null)
+                return false;
+            if (other.Id == this.Id)
+                return true;
+            else
+                return false;
+        }
     };
+
+    private class RecipeIngredient
+    {
+        public int IngredientId { get; set; }
+        public string IngredientName { get; set; }
+        public int RecipeId { get; set; }
+        public string RecipeName { get; set; }
+        public decimal Amount { get; set; }
+        public int Unit { get; set; }
+    }
+
+    private List<Ingredient> PreviouslySelectedIngredients = new List<Ingredient>();
+
+    private IList<Ingredient> CurrentlySelectedIngredients = new List<Ingredient>();
+
+    private Dictionary<string, List<RecipeIngredient>> recipesFromIngredients = new Dictionary<string, List<RecipeIngredient>>();
+
+    private async Task<IEnumerable<Ingredient>> SearchIngredients(string searchText)
+    {
+        var response = await httpClient.GetFromJsonAsync<IEnumerable<Ingredient>>($"{@Configuration["apiUrl"]}/Ingredients");
+        return response.ToList();
+    }
+
+    private async void IngredientsChanged()
+    {
+        if (CurrentlySelectedIngredients.Count > PreviouslySelectedIngredients.Count)
+        {
+            var newIngredients = CurrentlySelectedIngredients.Except(PreviouslySelectedIngredients).ToList();
+            foreach (var newIngredient in newIngredients)
+            {
+                var recipeIngredients = await httpClient.GetFromJsonAsync<List<RecipeIngredient>>($"{@Configuration["apiUrl"]}/Ingredients/{newIngredient.Id}/recipes");
+                recipesFromIngredients.Add(newIngredient.Name, recipeIngredients);
+            }
+        }
+        else if (CurrentlySelectedIngredients.Count < PreviouslySelectedIngredients.Count)
+        {
+            var removedIngredients = PreviouslySelectedIngredients.Except(CurrentlySelectedIngredients).ToList();
+            foreach (var removedIngredient in removedIngredients)
+            {
+                recipesFromIngredients.Remove(removedIngredient.Name);
+            }
+        }
+        PreviouslySelectedIngredients.Clear();
+        PreviouslySelectedIngredients.AddRange(CurrentlySelectedIngredients);
+        this.StateHasChanged();
+    }
 }
