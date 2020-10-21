@@ -22,7 +22,8 @@ namespace RecAPI.Models
             IngredientDTO ingredientDTO = new IngredientDTO
             {
                 Id = ingredient.Id,
-                Name = ingredient.Name
+                Name = ingredient.Name,
+                RecipeIngredients = new List<RecipeIngredientDTO>()
             };
 
             ingredient.RecipeIngredients?.ForEach(recipeIngredient =>

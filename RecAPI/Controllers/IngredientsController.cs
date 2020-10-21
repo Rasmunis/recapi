@@ -26,7 +26,6 @@ namespace RecAPI.Controllers
         public async Task<ActionResult<IEnumerable<IngredientDTO>>> GetIngredients()
         {
             var ingredients = await _context.Ingredients
-                .Include(i => i.RecipeIngredients).ThenInclude(ri => ri.Recipe)
                 .ToListAsync();
             return Ok(ingredients.Select(i => i.ToDto()));
         }
@@ -46,20 +45,21 @@ namespace RecAPI.Controllers
         }
 
         // GET: api/Ingredients/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<IngredientDTO>> GetIngredientWithRecipes(int id)
+        [HttpGet("{id}/recipes")]
+        public async Task<ActionResult<IEnumerable<RecipeIngredientDTO>>> GetRecipeIngredientsOfIngredient(int id)
         {
-            var ingredient = await _context.Ingredients
-                .Where(i => i.Id == id)
-                .Include(i => i.RecipeIngredients).ThenInclude(ri => ri.Recipe)
-                .FirstOrDefaultAsync();
+            var recipeIngredients = await _context.RecipeIngredients
+                .Where(ri => ri.IngredientId == id)
+                .Include(ri => ri.Recipe)
+                .Include(ri => ri.Ingredient)
+                .ToListAsync();
 
-            if (ingredient == null)
+            if (recipeIngredients == null)
             {
                 return NotFound();
             }
 
-            return ingredient.ToDto();
+            return Ok(recipeIngredients.Select(ri => ri.ToDto()));
         }
 
         // PUT: api/Ingredients/5

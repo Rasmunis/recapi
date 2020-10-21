@@ -106,11 +106,11 @@ namespace RecAPI.Tests
             using var context = new RecAPIContext(ContextOptions);
             var controller = new IngredientsController(context);
 
-            var ingredientActionResult = await controller.GetIngredientWithRecipes(2);
+            var ingredientActionResult = await controller.GetRecipeIngredientsOfIngredient(2);
 
-            var ingredient = ingredientActionResult.Value;
+            var recipeIngredients = ingredientActionResult.Value;
 
-            Assert.Equal("Pure Garlic", ingredient.RecipeIngredients.FirstOrDefault().RecipeName);
+            Assert.Equal("Pure Garlic", recipeIngredients.FirstOrDefault().RecipeName);
 
         }
     }
