@@ -3,7 +3,7 @@
 @inject IConfiguration Configuration
 @inject HttpClient httpClient
 
-<h3>RecipeSearch</h3>
+<h3>Oppskriftsøk</h3>
 
 <BlazoredTypeahead SearchMethod="@SearchIngredients"
                    Values="CurrentlySelectedIngredients"
@@ -12,6 +12,8 @@
                    TItem="@Ingredient"
                    TValue="@Ingredient"
                    Context="ingredient"
+                   Debounce=500
+                   MinimumLength=2
                    placeholder="Search for ingredients...">
     <SelectedTemplate>
         @ingredient.Name
@@ -73,7 +75,7 @@
 
     private async Task<IEnumerable<Ingredient>> SearchIngredients(string searchText)
     {
-        var response = await httpClient.GetFromJsonAsync<IEnumerable<Ingredient>>($"{@Configuration["apiUrl"]}/Ingredients");
+        var response = await httpClient.GetFromJsonAsync<IEnumerable<Ingredient>>($"{@Configuration["apiUrl"]}/Ingredients/search?query={searchText}");
         return response.ToList();
     }
 
