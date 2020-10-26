@@ -43,6 +43,13 @@ namespace RecAPI.Tests
                 RecipeIngredients = new List<RecipeIngredient>()
             };
 
+            var fugu = new Ingredient
+            {
+                Id = 3,
+                Name = "Fugu",
+                RecipeIngredients = new List<RecipeIngredient>()
+            };
+
             var recipe = new Recipe
             {
                 Id = 1,
@@ -66,6 +73,7 @@ namespace RecAPI.Tests
 
             context.Ingredients.Add(garlic);
             context.Ingredients.Add(fusilli);
+            context.Ingredients.Add(fugu);
             context.SaveChanges();
         }
 
@@ -95,23 +103,34 @@ namespace RecAPI.Tests
             };
 
             var ingredientActionResult = await controller.PostIngredient(ingredientDTO);
-
             var ingredient = (ingredientActionResult.Result as CreatedAtActionResult).Value as IngredientDTO;
 
             Assert.Equal("Fusilli", ingredient.Name);
         }
 
+        [Fact]
         public async void Can_get_ingredient_with_recipe()
         {
             using var context = new RecAPIContext(ContextOptions);
             var controller = new IngredientsController(context);
 
             var ingredientActionResult = await controller.GetRecipeIngredientsOfIngredient(2);
-
-            var recipeIngredients = ingredientActionResult.Value;
+            var recipeIngredients = (ingredientActionResult.Result as OkObjectResult).Value as IEnumerable<RecipeIngredientDTO>;
 
             Assert.Equal("Pure Garlic", recipeIngredients.FirstOrDefault().RecipeName);
 
+        }
+
+        [Fact]
+        public async void Can_get_ingredients_by_name_substring()
+        {
+            using var context = new RecAPIContext(ContextOptions);
+            var controller = new IngredientsController(context);
+
+            var ingredientActionResult = await controller.GetIngredientsByNameSubstring("Fu");
+            var ingredients = (ingredientActionResult.Result as OkObjectResult).Value as IEnumerable<IngredientDTO>;
+
+            Assert.Equal(2, ingredients.Count());
         }
     }
 }

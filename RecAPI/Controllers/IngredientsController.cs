@@ -30,6 +30,16 @@ namespace RecAPI.Controllers
             return Ok(ingredients.Select(i => i.ToDto()));
         }
 
+        // GET: api/Ingredients/search?query=helloworld
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<IngredientDTO>>> GetIngredientsByNameSubstring([FromQuery(Name = "query")] string query)
+        {
+            var ingredients = await _context.Ingredients
+                .Where(i => EF.Functions.Like(i.Name, $"%{query}%"))
+                .ToListAsync();
+            return Ok(ingredients.Select(i => i.ToDto()));
+        }
+
         // GET: api/Ingredients/5
         [HttpGet("{id}")]
         public async Task<ActionResult<IngredientDTO>> GetIngredient(int id)
