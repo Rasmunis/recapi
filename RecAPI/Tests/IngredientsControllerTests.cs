@@ -84,7 +84,6 @@ namespace RecAPI.Tests
             var controller = new IngredientsController(context);
 
             var ingredientActionResult = await controller.GetIngredient(1);
-
             var ingredient = ingredientActionResult.Value;
 
             Assert.Equal("Fusilli", ingredient.Name);

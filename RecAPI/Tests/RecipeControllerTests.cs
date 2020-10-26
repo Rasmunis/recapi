@@ -95,7 +95,6 @@ namespace RecAPI.Tests
             var controller = new RecipesController(context);
 
             var recipeActionResult = await controller.GetRecipe(1);
-
             var recipe = recipeActionResult.Value;
 
             Assert.Equal("Pasta with garlic", recipe.Name);
@@ -108,7 +107,6 @@ namespace RecAPI.Tests
             var controller = new RecipesController(context);
 
             var recipeActionResult = await controller.GetRecipe(1);
-
             var recipe = recipeActionResult.Value;
 
             Assert.Equal("Garlic", recipe.RecipeIngredients.FirstOrDefault().IngredientName);
@@ -145,7 +143,6 @@ namespace RecAPI.Tests
             };
 
             var recipeActionResult = await controller.PostRecipe(recipeDTO);
-
             var recipe = (recipeActionResult.Result as CreatedAtActionResult).Value as RecipeDTO;
 
             Assert.Equal("Pasta with ketchup", recipe.Name);
