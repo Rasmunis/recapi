@@ -18,6 +18,10 @@ jobs:
       - name: Publish .NET Core Project
         run: dotnet publish ./RecFrontend/RecFrontend.csproj -c Release -o release --nologo
       
+      # changes the base-tag in index.html from '/' to 'BlazorGitHubPagesDemo' to match GitHub Pages repository subdirectory
+      - name: Change base-tag in index.html from / to recapi
+        run: sed -i 's/<base href="\/" \/>/<base href="\/recapi\/" \/>/g' release/wwwroot/index.html
+      
       - name: Commit wwwroot to Github Pages
         uses: JamesIves/github-pages-deploy-action@3.5.9
         with:
