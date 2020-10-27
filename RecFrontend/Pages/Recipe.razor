@@ -1,0 +1,51 @@
+﻿@page "/recipe/{RecipeId}"
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@inject HttpClient httpClient
+
+<h2>@RecipeDetails.Name</h2>
+<p>@RecipeDetails.Description</p>
+<h3>Ingredienser</h3>
+<ul>
+@foreach ( RecipeIngredient recipeIngredient in RecipeDetails.RecipeIngredients)
+{
+    <li>@recipeIngredient.IngredientName: @recipeIngredient.Amount gram</li>
+}
+</ul>
+<h3>Instruksjoner</h3>
+<p>@RecipeDetails.Instructions</p>
+
+@code {
+    private class DetailedRecipe
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Instructions { get; set; }
+        public List<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
+    };
+
+    private class RecipeIngredient
+    {
+        public int IngredientId { get; set; }
+        public string IngredientName { get; set; }
+        public decimal Amount { get; set; }
+        public int Unit { get; set; }
+    }
+
+    [Parameter]
+    public string RecipeId { get; set; }
+
+    private DetailedRecipe RecipeDetails { get; set; } = new DetailedRecipe();
+
+    private async Task<DetailedRecipe> GetDetailedRecipe(string recipeId)
+    {
+        return await httpClient.GetFromJsonAsync<DetailedRecipe>($"{@Configuration["apiUrl"]}/Recipes/{recipeId}");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        RecipeId = RecipeId;
+        RecipeDetails = await httpClient.GetFromJsonAsync<DetailedRecipe>($"{@Configuration["apiUrl"]}/Recipes/{RecipeId}");
+    }
+}

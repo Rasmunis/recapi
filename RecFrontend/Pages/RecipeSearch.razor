@@ -14,7 +14,7 @@
                    Context="ingredient"
                    Debounce=500
                    MinimumLength=2
-                   placeholder="Search for ingredients...">
+                   placeholder="Søk etter ingredienser...">
     <SelectedTemplate>
         @ingredient.Name
     </SelectedTemplate>
@@ -29,7 +29,9 @@
     <h5>@ingredientCombination.Key</h5>
     foreach (RecipeIngredient recipeIngredient in ingredientCombination.Value)
     {
-        <div>@recipeIngredient.RecipeName</div>
+        <a href="@($"recipe/{recipeIngredient.RecipeId}")">
+            @recipeIngredient.RecipeName
+        </a>
     }
 }
 
