@@ -1,0 +1,21 @@
+name: Publish Docker image
+
+on:
+  push:
+    branches: [ master ]
+    
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to DockerHub
+        env:
+          USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: docker login -u $USERNAME -p $PASSWORD
+      - name: Build docker image
+        run: docker build --file ./RecAPI/Dockerfile --tag rasmunis/recapi:latest .
+      - name: Push docker image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/recapi:latest
+        
