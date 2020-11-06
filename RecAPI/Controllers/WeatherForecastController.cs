@@ -13,7 +13,7 @@ namespace RecAPI.Controllers
     {
         private static readonly string[] Summaries = new[]
         {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+            "Iskaldt", "Bitende", "Kaldt", "Kjølig", "Mildt", "Lunkent", "Varmt", "Stekende", "Brennhett"
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
